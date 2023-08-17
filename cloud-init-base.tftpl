@@ -1,0 +1,54 @@
+merge_how:
+ - name: list
+   settings: [append]
+ - name: dict
+   settings: [no_replace, recurse_list]
+
+runcmd:
+  - |
+      mkdir -p "/opt/prometheus"
+
+      wget -O "/opt/prometheus/node_exporter-${node_exporter_version}.linux-amd64.tar.gz" \
+        https://github.com/prometheus/node_exporter/releases/download/v${node_exporter_version}/node_exporter-${node_exporter_version}.linux-amd64.tar.gz
+      tar -C /opt/prometheus -xzf "/opt/prometheus/node_exporter-${node_exporter_version}.linux-amd64.tar.gz"
+
+      wget -O "/opt/prometheus/prometheus-${prometheus_version}.linux-amd64.tar.gz" \
+        https://github.com/prometheus/prometheus/releases/download/v${prometheus_version}/prometheus-${prometheus_version}.linux-amd64.tar.gz
+      tar -C /opt/prometheus -xzf "/opt/prometheus/prometheus-${prometheus_version}.linux-amd64.tar.gz"
+      
+      systemctl daemon-reload
+
+      systemctl enable node_exporter.service
+      systemctl start node_exporter.service
+
+      systemctl enable prometheus.service
+      systemctl start prometheus.service
+write_files:
+  - path: /etc/systemd/system/node_exporter.service
+    content: |
+      [Unit]
+      Description=Prometheus node_exporter
+      After=network.target
+
+      [Service]
+      Type=exec
+      ExecStart=/opt/prometheus/node_exporter-${node_exporter_version}.linux-amd64/node_exporter
+      ExecReload=/bin/kill -HUP $MAINPID
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+  - path: /etc/systemd/system/prometheus.service
+    content: |
+      [Unit]
+      Description=Prometheus server
+      After=network.target
+
+      [Service]
+      Type=exec
+      ExecStart=/opt/prometheus/prometheus-${prometheus_version}.linux-amd64/prometheus --config.file=/opt/prometheus/prometheus.yml
+      ExecReload=/bin/kill -HUP $MAINPID
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
