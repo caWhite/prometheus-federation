@@ -23,11 +23,11 @@ This example creates an AWS VPC, public subnets spanning 2 availability zones, a
 # Apply the Terraform configuration 
 ❯ terraform apply 
 
-# Prometheus web URLs can be found in Terraform outputs. A private key is also exported to troubleshoot an installation via SSH.
+# After a short wait, the Prometheus instances will be accessible via the URLs in Terraform outputs. A private key is also exported to troubleshoot an installation via SSH.
 ❯ terraform output
-prometheus_downstream_webui = "http://<ec2-public-dns-name>:9090"
-prometheus_federator_webui = "http://<ec2-public-dns-name>:9090"
+prometheus_downstream_url = "http://<ec2-public-dns-name>:9090"
+prometheus_federator_url = "http://<ec2-public-dns-name>:9090"
 ssh_private_key = <sensitive>
 
 # Destroy resources when done to stop incurring costs
-terraform destroy 
+❯ terraform destroy
